@@ -1,0 +1,103 @@
+package com.github.zetten.maven.xvfb;
+
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
+/**
+ * Common fields for handling Xvfb instances and the xvfb-maven-plugin goals.
+ */
+public abstract class AbstractXvfbMojo extends AbstractMojo {
+
+	/**
+	 * The Maven plugin context map key storing the Xvfb Process object.
+	 */
+	protected static final String XVFB_PROCESS_KEY = "process";
+
+	/**
+	 * A reference to the containing Maven project. Not user-editable.
+	 */
+	@Parameter(defaultValue = "${project}", readonly = true)
+	protected MavenProject mavenProject;
+
+	/**
+	 * Path to the Xvfb binary. By default the first available Xvfb in $PATH will be used.
+	 */
+	@Parameter(defaultValue = "Xvfb", required = true)
+	protected String xvfbBinary;
+
+	/**
+	 * An optional parameter to fix the X display port used by Xvfb, e.g. ":20".
+	 */
+	@Parameter
+	protected String display;
+
+	/**
+	 * The base value for X display port lookups.
+	 */
+	@Parameter(defaultValue = "6000", required = true)
+	protected Integer xDisplayPortBase;
+
+	/**
+	 * The first display variable to test, e.g. "DISPLAY=:20".
+	 */
+	@Parameter(defaultValue = "20", required = true)
+	protected Integer xDisplayDefaultNumber;
+
+	/**
+	 * The upper bound to limit searching for a free X display port.
+	 */
+	@Parameter(defaultValue = "20", required = true)
+	protected Integer maxDisplaysToSearch;
+
+	/**
+	 * <p>
+	 * True if xvfb:run should keep retrying the port detection until a valid X display port is found.
+	 * </p>
+	 * <p>
+	 * This provides some rudimentary thread-safety against the race condition caused by the window between finding an
+	 * unused port and launching Xvfb against that port.
+	 * </p>
+	 */
+	@Parameter(defaultValue = "true", required = true)
+	protected Boolean doRetry;
+
+	/**
+	 * <p>
+	 * True if the DISPLAY environment variable should be set.
+	 * </p>
+	 * <p>
+	 * <strong>Warning:</strong> This is almost certainly not OS-portable and may render builds unstable. Use at your
+	 * own risk!
+	 * </p>
+	 */
+	@Parameter(defaultValue = "false")
+	protected Boolean setDisplayEnvVar;
+
+	/**
+	 * <p>
+	 * True if the Maven property defined in {@link #displayMavenProp} should be set to the value of the X display
+	 * variable.
+	 * </p>
+	 * <p>
+	 * This property may be used in subsequent lifecycle phases, for example to inject the DISPLAY environment variable
+	 * to a Surefire execution or Ant task.
+	 * </p>
+	 */
+	@Parameter(defaultValue = "true")
+	protected Boolean setDisplayMavenProp;
+
+	/**
+	 * The Maven property to be set if #setDisplayMavenProp is true.
+	 */
+	@Parameter(defaultValue = "xvfb.display")
+	protected String displayMavenProp;
+
+	/**
+	 * The directory to contain the memory-mapped framebuffer files as described by the '-fbdir' option to Xfvb (see
+	 * {@link http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml}).
+	 */
+	@Parameter(defaultValue = "${project.build.directory}/Xvfb", required = false)
+	protected String fbdir;
+
+}
