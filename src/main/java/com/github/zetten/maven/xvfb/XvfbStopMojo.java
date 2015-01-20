@@ -1,14 +1,35 @@
 package com.github.zetten.maven.xvfb;
 
+/*
+ * #%L
+ * Xvfb Maven Plugin
+ * %%
+ * Copyright (C) 2015 Peter van Zetten
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 /**
  * Stop a running Xvfb server which was launched via xvfb:run. This retrieves the process to kill from the Maven plugin
  * context.
  */
-@Mojo(name = "stop", threadSafe = true)
+@Mojo(name = "stop", threadSafe = true, defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST)
 public class XvfbStopMojo extends AbstractXvfbMojo {
 
 	@Override
