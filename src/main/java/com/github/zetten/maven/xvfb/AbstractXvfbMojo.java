@@ -32,7 +32,12 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	/**
 	 * The Maven plugin context map key storing the Xvfb Process object.
 	 */
-	protected static final String XVFB_PROCESS_KEY = "process";
+	protected static final String XVFB_PROCESS_KEY = "xvfb.process";
+
+	/**
+	 * The Maven plugin context map key storing the path to the lockfile for the Xvfb port.
+	 */
+	protected static final String XVFB_LOCKFILE_KEY = "xvfb.lockfile";
 
 	/**
 	 * A reference to the containing Maven project. Not user-editable.
@@ -119,5 +124,18 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	 */
 	@Parameter(defaultValue = "${project.build.directory}/Xvfb", required = false)
 	protected String fbdir;
+
+	/**
+	 * Shut down the given Xvfb process.
+	 */
+	protected void destroyXvfb(Process process) {
+		getLog().debug("Shutting down Xvfb from previous run...");
+		process.destroy();
+		try {
+			int exitValue = process.waitFor();
+			getLog().info("Xvfb shut down with exit code " + exitValue + ".");
+		} catch (InterruptedException e) {
+		}
+	}
 
 }

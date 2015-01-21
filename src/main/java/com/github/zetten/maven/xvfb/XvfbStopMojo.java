@@ -20,6 +20,8 @@ package com.github.zetten.maven.xvfb;
  * #L%
  */
 
+import java.io.File;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -34,18 +36,22 @@ public class XvfbStopMojo extends AbstractXvfbMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		Process process = (Process) getPluginContext().get(XVFB_PROCESS_KEY);
+		if (getPluginContext().containsKey(XVFB_PROCESS_KEY)) {
+			Process process = (Process) getPluginContext().get(XVFB_PROCESS_KEY);
 
-		if (process == null) {
-			throw new MojoExecutionException("Cannot stop Xvfb: Could not determine X display to stop.");
+			if (process == null) {
+				throw new MojoExecutionException("Cannot stop Xvfb: Could not determine X display to stop.");
+			}
+
+			destroyXvfb(process);
+			getPluginContext().remove(XVFB_PROCESS_KEY);
 		}
-
-		getLog().info("Shutting down Xvfb from previous run...");
-		process.destroy();
-		try {
-			int exitValue = process.waitFor();
-			getLog().info("Xvfb shut down with exit code " + exitValue + ".");
-		} catch (InterruptedException e) {
+		if (getPluginContext().containsKey(XVFB_LOCKFILE_KEY)) {
+			File lockFile = (File) getPluginContext().get(XVFB_LOCKFILE_KEY);
+			if (lockFile != null) {
+				lockFile.delete();
+				getPluginContext().remove(XVFB_LOCKFILE_KEY);
+			}
 		}
 	}
 

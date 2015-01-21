@@ -28,6 +28,7 @@ import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -57,6 +58,36 @@ import com.google.common.collect.Lists;
 @Mojo(name = "run", threadSafe = true, defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST)
 public class XvfbRunMojo extends AbstractXvfbMojo {
 
+	private static final String TMPDIR_KEY = "java.io.tmpdir";
+	private static final String TMPFILE_PREFIX = ".mvn_Xvfb_display";
+
+	/**
+	 * Create a new Mojo and register the shutdown handler to ensure no Xvfb processes are left hanging around in the
+	 * event that xvfb:stop is not run for any reason.
+	 */
+	public XvfbRunMojo() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				if (getPluginContext().containsKey(XVFB_PROCESS_KEY)) {
+					Process process = (Process) getPluginContext().get(XVFB_PROCESS_KEY);
+					if (process != null) {
+						destroyXvfb(process);
+						getPluginContext().remove(XVFB_PROCESS_KEY);
+					}
+				}
+
+				if (getPluginContext().containsKey(XVFB_LOCKFILE_KEY)) {
+					File lockFile = (File) getPluginContext().get(XVFB_LOCKFILE_KEY);
+					if (lockFile != null) {
+						getLog().debug("Deleting lockfile: " + lockFile.getAbsolutePath());
+						lockFile.delete();
+						getPluginContext().remove(XVFB_LOCKFILE_KEY);
+					}
+				}
+			}
+		});
+	}
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (display != null) {
@@ -75,6 +106,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			// Otherwise, search for an available display, retrying until one is found in the requested range
 			try (ServerSocket s = getAvailableDisplaySocket()) {
 				String d = ":" + (s.getLocalPort() - xDisplayPortBase);
+				// Close the placeholder socket before launching Xvfb on the same port
 				s.close();
 				getLog().info("Launching Xvfb on " + d);
 				startXvfb(d);
@@ -129,19 +161,28 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 
 	/**
 	 * Iterate through the range specified by xDisplayPortBase, xDisplayDefaultNumber, and maxDisplaysToSearch until a
-	 * free port is found. A socket is eagerly created to 'reserve' the port against other threads.
+	 * free port is found. If a socket can be created against the port, a lockfile is also created to reserve the port
+	 * against other executions of the plugin.
 	 * 
 	 * @return The created socket, if one is found in the given bounds.
 	 * @throws MojoExecutionException
 	 *             If no socket is able to be created.
 	 */
+	@SuppressWarnings("unchecked")
 	private ServerSocket getAvailableDisplaySocket() throws MojoExecutionException {
 		int n = xDisplayDefaultNumber;
 		while (n <= xDisplayDefaultNumber + maxDisplaysToSearch) {
 			int port = xDisplayPortBase + n;
+			File lockFile = Paths.get(System.getProperty(TMPDIR_KEY), TMPFILE_PREFIX + port).toFile();
 			try {
-				getLog().debug("Trying to reserve display :" + n);
-				return new ServerSocket(port);
+				if (!lockFile.exists()) {
+					getLog().debug("Trying to reserve display :" + n);
+					ServerSocket socket = new ServerSocket(port);
+					lockFile.createNewFile();
+					getLog().debug("Using lockfile: " + lockFile.getAbsolutePath());
+					getPluginContext().put(XVFB_LOCKFILE_KEY, lockFile);
+					return socket;
+				}
 			} catch (IOException e) {
 				if (doRetry) {
 					// swallow the exception with a log message
