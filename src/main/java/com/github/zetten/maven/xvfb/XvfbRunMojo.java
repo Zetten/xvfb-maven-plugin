@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -72,30 +73,17 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			}
 		} else {
 			// Otherwise, search for an available display, retrying until one is found in the requested range
-			int n = xDisplayDefaultNumber;
-			while (n <= xDisplayDefaultNumber + maxDisplaysToSearch) {
-				String d = ":" + n;
-				getLog().debug("Testing DISPLAY=" + d);
-
-				if (!isDisplayActive(d)) {
-					try {
-						startXvfb(d);
-						return;
-					} catch (IOException e) {
-						if (doRetry) {
-							// swallow the exception with a log message
-							getLog().info("Failed to start Xvfb on display " + d + ", retrying.");
-							getLog().debug(e);
-						} else {
-							throw new MojoExecutionException("Could not find a usable display and doRetry is false.");
-						}
-					}
-				} else {
-					n++;
-				}
+			try (ServerSocket s = getAvailableDisplaySocket()) {
+				String d = ":" + (s.getLocalPort() - xDisplayPortBase);
+				s.close();
+				getLog().info("Launching Xvfb on " + d);
+				startXvfb(d);
+				return;
+			} catch (IOException e) {
+				getLog().debug("Unable to start Xvfb by searching for a free port.", e);
 			}
 
-			throw new MojoExecutionException("Could not find a usable display in the given bounds.");
+			throw new MojoExecutionException("Could not launch Xvfb.");
 		}
 	}
 
@@ -122,13 +110,10 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			command.add(fbdir);
 		}
 
-		final ProcessBuilder pb = new ProcessBuilder();
-		pb.command(command);
-
-		Process process = null;
+		final ProcessBuilder pb = new ProcessBuilder(command);
 
 		getLog().info("Attempting to launch Xvfb with arguments: " + command);
-		process = pb.start();
+		Process process = pb.start();
 		getLog().info("Xvfb launched.");
 
 		if (process != null) {
@@ -140,6 +125,35 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 				setEnvDisplay(d);
 			}
 		}
+	}
+
+	/**
+	 * Iterate through the range specified by xDisplayPortBase, xDisplayDefaultNumber, and maxDisplaysToSearch until a
+	 * free port is found. A socket is eagerly created to 'reserve' the port against other threads.
+	 * 
+	 * @return The created socket, if one is found in the given bounds.
+	 * @throws MojoExecutionException
+	 *             If no socket is able to be created.
+	 */
+	private ServerSocket getAvailableDisplaySocket() throws MojoExecutionException {
+		int n = xDisplayDefaultNumber;
+		while (n <= xDisplayDefaultNumber + maxDisplaysToSearch) {
+			int port = xDisplayPortBase + n;
+			try {
+				getLog().debug("Trying to reserve display :" + n);
+				return new ServerSocket(port);
+			} catch (IOException e) {
+				if (doRetry) {
+					// swallow the exception with a log message
+					getLog().debug("Failed to start Xvfb on display :" + n + ", retrying.");
+				} else {
+					throw new MojoExecutionException("Could not find a usable display and doRetry is false.");
+				}
+			}
+
+			n++;
+		}
+		throw new MojoExecutionException("Could not find a usable display in the given bounds.");
 	}
 
 	/**
