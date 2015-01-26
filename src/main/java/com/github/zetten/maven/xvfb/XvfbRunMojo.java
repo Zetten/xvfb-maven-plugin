@@ -146,9 +146,11 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 
 		getLog().info("Attempting to launch Xvfb with arguments: " + command);
 		Process process = pb.start();
-		getLog().info("Xvfb launched.");
 
 		if (process != null) {
+			getLog().info("Xvfb launched.");
+
+			// Publish details of Xvfb instance
 			getPluginContext().put(XVFB_PROCESS_KEY, process);
 			if (setDisplayMavenProp) {
 				setPropDisplay(d);
@@ -171,11 +173,14 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	@SuppressWarnings("unchecked")
 	private ServerSocket getAvailableDisplaySocket() throws MojoExecutionException {
 		int n = xDisplayDefaultNumber;
+
 		while (n <= xDisplayDefaultNumber + maxDisplaysToSearch) {
 			int port = xDisplayPortBase + n;
 			File lockFile = Paths.get(System.getProperty(TMPDIR_KEY), TMPFILE_PREFIX + port).toFile();
+
 			try {
 				if (!lockFile.exists()) {
+					// The socket must still be tested, as the port may be used by other processes
 					getLog().debug("Trying to reserve display :" + n);
 					ServerSocket socket = new ServerSocket(port);
 					lockFile.createNewFile();

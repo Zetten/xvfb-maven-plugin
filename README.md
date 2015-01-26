@@ -23,6 +23,43 @@ which can be used in any other plugin executions (e.g. via the
 variable directly within the executing JVM is also available, but is not
 recommended.
 
+For example, to run full-UI tycho-surefire-test executions in their own Xvfb
+instances, use configuration like the below in your parent pom.xml. Since the
+Tycho test plugin binds to the `integration-test` phase, the Xvfb plugin will
+wrap their execution and set the `xvfb.display` plugin value.
+
+```
+<pluginManagement>
+    <plugins>
+        <plugin>
+            <groupId>com.github.zetten</groupId>
+            <artifactId>xvfb-maven-plugin</artifactId>
+            <version>${xvfb-maven-plugin.version}</version>
+            <executions>
+                <execution>
+                    <id>wrap-tests</id>
+                    <goals>
+                        <goal>run</goal>
+                        <goal>stop</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-surefire-plugin</artifactId>
+            <version>${tycho.version}</version>
+            <configuration>
+                <useUIHarness>true</useUIHarness>
+                <environmentVariables>
+                    <DISPLAY>${xvfb.display}</DISPLAY>
+                </environmentVariables>
+            </configuration>
+        </plugin>
+    </plugins>
+</pluginManagement>
+```
+
 ## Credits
 
 The approach was inspired by the [Jenkins Xvfb plugin][2], the Selenium Maven

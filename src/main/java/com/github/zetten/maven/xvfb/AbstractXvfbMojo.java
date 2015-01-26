@@ -60,19 +60,19 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	/**
 	 * The base value for X display port lookups.
 	 */
-	@Parameter(defaultValue = "6000", required = true)
+	@Parameter(defaultValue = "6000", required = true, property = "xvfb.ports.base")
 	protected Integer xDisplayPortBase;
 
 	/**
-	 * The first display variable to test, e.g. "DISPLAY=:20".
+	 * The first display variable to test, e.g. 20 for "DISPLAY=:20".
 	 */
-	@Parameter(defaultValue = "20", required = true)
+	@Parameter(defaultValue = "20", required = true, property = "xvfb.ports.first")
 	protected Integer xDisplayDefaultNumber;
 
 	/**
 	 * The upper bound to limit searching for a free X display port.
 	 */
-	@Parameter(defaultValue = "20", required = true)
+	@Parameter(defaultValue = "20", required = true, property = "xvfb.ports.max")
 	protected Integer maxDisplaysToSearch;
 
 	/**
