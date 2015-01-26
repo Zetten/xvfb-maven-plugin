@@ -12,7 +12,7 @@
 
 	<groupId>com.github.zetten</groupId>
 	<artifactId>xvfb-maven-plugin</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>Xvfb Maven Plugin</name>
@@ -203,9 +203,9 @@
 						</executions>
 					</plugin>
 				</plugins>
-
 			</build>
 		</profile>
 	</profiles>
 
 </project>
+
