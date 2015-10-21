@@ -119,14 +119,18 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected String displayMavenProp;
 
 	/**
-	 * The directory to contain the memory-mapped framebuffer files as described by the '-fbdir' option to Xfvb (see
-	 * {@link http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml}).
+	 * The directory to contain the memory-mapped framebuffer files as described by the '-fbdir' option to Xfvb
+	 *
+	 * @see <a href="http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml">
+	 * http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml</a>
 	 */
 	@Parameter(defaultValue = "${project.build.directory}/Xvfb", required = false)
 	protected String fbdir;
 
 	/**
 	 * Shut down the given Xvfb process.
+	 *
+	 * @param process The process to be destroyed.
 	 */
 	protected void destroyXvfb(Process process) {
 		getLog().debug("Shutting down Xvfb from previous run...");
