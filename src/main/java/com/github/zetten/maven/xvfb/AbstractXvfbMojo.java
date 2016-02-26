@@ -9,9 +9,9 @@ package com.github.zetten.maven.xvfb;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,13 @@ package com.github.zetten.maven.xvfb;
  * limitations under the License.
  * #L%
  */
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -132,13 +139,28 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	 *
 	 * @param process The process to be destroyed.
 	 */
-	protected void destroyXvfb(Process process) {
+	protected void destroyXvfb(final Process process) {
 		getLog().debug("Shutting down Xvfb from previous run...");
 		process.destroy();
+		
+		// workaround blocking java.lang.Process.waitFor()
+		// with Java8 we will get java.lang.Process.waitFor(long, TimeUnit)
+		
+		FutureTask<Integer> waitFor = new FutureTask<Integer>(new Callable<Integer>() {
+
+			@Override
+			public Integer call() throws Exception {
+				return process.waitFor();
+			}
+			
+		});
+		Executors.newSingleThreadExecutor().execute(waitFor);
+		
 		try {
-			int exitValue = process.waitFor();
+			Integer exitValue = waitFor.get(13,TimeUnit.SECONDS);
 			getLog().info("Xvfb shut down with exit code " + exitValue + ".");
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			getLog().info("Xvfb shut down with unknown exit code.");				
 		}
 	}
 
