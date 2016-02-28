@@ -57,6 +57,7 @@
 				</executions>
 				<configuration>
 					<display>:99</display>
+					<stopTimeoutInSeconds>1313</stopTimeoutInSeconds>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -89,6 +90,15 @@
 								<argument>${project.build.directory}/Xvfb</argument>
 							</arguments>
 							<outputFile>${project.build.directory}/out-fbdir</outputFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>test-stop-timeout</id>
+						<goals><goal>exec</goal></goals>
+						<phase>integration-test</phase>
+						<configuration>
+							<executable>env</executable>
+							<outputFile>${project.build.directory}/out-stop-timeout</outputFile>
 						</configuration>
 					</execution>
 				</executions>

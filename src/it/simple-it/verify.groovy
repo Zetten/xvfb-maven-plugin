@@ -33,3 +33,11 @@ new File(basedir, "target/out-fbdir").eachLine { line ->
 	}
 }
 assert foundFbdir
+
+def foundStopTimeout = false
+new File(basedir, "build.log").eachLine { line ->
+	if (!foundStopTimeout) {
+		foundStopTimeout = (line =~ /.*stopTimeoutInSeconds = 1313/).matches()
+	}
+}
+assert foundStopTimeout
