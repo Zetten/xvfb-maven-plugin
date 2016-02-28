@@ -132,6 +132,9 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	private void startXvfb(String d) throws IOException {
 		List<String> command = Lists.newArrayList(xvfbBinary);
 		command.add(d);
+		if ( xvfbArgs!=null ) {
+			command.addAll(xvfbArgs);
+		}
 
 		if (!Strings.isNullOrEmpty(fbdir)) {
 			File dir = new File(fbdir);

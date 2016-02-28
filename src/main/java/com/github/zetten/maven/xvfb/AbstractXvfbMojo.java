@@ -20,6 +20,7 @@ package com.github.zetten.maven.xvfb;
  * #L%
  */
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -139,6 +140,12 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	 */
 	@Parameter(defaultValue = "13", required = false)
 	protected long stopTimeoutInSeconds;
+
+	/**
+	 * Additional arguments to the Xvfb process.
+	 */
+	@Parameter(required = false)
+	protected List<String> xvfbArgs;
 
 	/**
 	 * Shut down the given Xvfb process.
