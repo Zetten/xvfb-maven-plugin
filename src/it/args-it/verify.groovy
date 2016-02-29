@@ -18,26 +18,26 @@
  * #L%
  */
 
-def foundDisplay = false
-new File(basedir, "target/out-environment").eachLine { line ->
-	if (!foundDisplay) {
-		foundDisplay = (line =~ /^DISPLAY=:99$/).matches()
-	}
-}
-assert foundDisplay
-
-def foundFbdir = false
-new File(basedir, "target/out-fbdir").eachLine { line ->
-	if (!foundFbdir) {
-		foundFbdir = (line =~ /^Xvfb_screen0$/).matches()
-	}
-}
-assert foundFbdir
-
-def foundDestroyTimeout = false
+def foundArgs = false
 new File(basedir, "build.log").eachLine { line ->
-	if (!foundDestroyTimeout) {
-		foundDestroyTimeout = (line =~ /.*destroyTimeout = 1313/).matches()
+	if (!foundArgs) {
+		foundArgs = (line =~ /.*xvfbArgs = \[-screen, 0, 1800x1024x24\]/).matches()
 	}
 }
-assert foundDestroyTimeout
+assert foundArgs
+
+def foundLaunchArgs = false
+new File(basedir, "build.log").eachLine { line ->
+	if (!foundLaunchArgs) {
+		foundLaunchArgs = (line =~ /.*Attempting to launch Xvfb.*-screen, 0, 1800x1024x24.*/).matches()
+	}
+}
+assert foundLaunchArgs
+
+def foundLaunchArgLine = false
+new File(basedir, "build.log").eachLine { line ->
+	if (!foundLaunchArgLine) {
+		foundLaunchArgLine = (line =~ /.*Attempting to launch Xvfb.*-pixdepths, 4.*/).matches()
+	}
+}
+assert foundLaunchArgLine
