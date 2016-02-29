@@ -61,6 +61,7 @@
 						<xvfbArg>0</xvfbArg>
 						<xvfbArg>1800x1024x24</xvfbArg>
 					</xvfbArgs>
+					<xvfbArgLine>-pixdepths 4</xvfbArgLine>
 				</configuration>
 			</plugin>			
 		</plugins>

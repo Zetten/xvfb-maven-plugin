@@ -38,9 +38,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * <p>
@@ -99,7 +102,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			try {
 				startXvfb(display);
 				return;
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new MojoExecutionException("Could not launch Xvfb.", e);
 			}
 		} else {
@@ -111,7 +114,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 				getLog().info("Launching Xvfb on " + d);
 				startXvfb(d);
 				return;
-			} catch (IOException e) {
+			} catch (Exception e) {
 				getLog().debug("Unable to start Xvfb by searching for a free port.", e);
 			}
 
@@ -125,15 +128,18 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	 * @param d
 	 *            The X display to use, e.g. ":20".
 	 * @return The Process representing the Xvfb server.
-	 * @throws IOException
-	 *             If Xvfb fails to start.
+	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
-	private void startXvfb(String d) throws IOException {
+	private void startXvfb(String d) throws Exception {
 		List<String> command = Lists.newArrayList(xvfbBinary);
 		command.add(d);
 		if ( xvfbArgs!=null ) {
 			command.addAll(xvfbArgs);
+		}
+		if ( xvfbArgLine!=null ) {
+			String[] args = CommandLineUtils.translateCommandline(xvfbArgLine);
+			command.addAll(Arrays.asList(args));
 		}
 
 		if (!Strings.isNullOrEmpty(fbdir)) {

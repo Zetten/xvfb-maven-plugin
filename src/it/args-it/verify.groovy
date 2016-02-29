@@ -33,3 +33,11 @@ new File(basedir, "build.log").eachLine { line ->
 	}
 }
 assert foundLaunchArgs
+
+def foundLaunchArgLine = false
+new File(basedir, "build.log").eachLine { line ->
+	if (!foundLaunchArgLine) {
+		foundLaunchArgLine = (line =~ /.*Attempting to launch Xvfb.*-pixdepths, 4.*/).matches()
+	}
+}
+assert foundLaunchArgLine

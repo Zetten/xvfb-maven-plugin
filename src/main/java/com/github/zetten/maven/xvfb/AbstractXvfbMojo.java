@@ -144,8 +144,14 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	/**
 	 * Additional arguments to the Xvfb process.
 	 */
-	@Parameter(required = false)
+	@Parameter(required = false, property = "xvfb.args")
 	protected List<String> xvfbArgs;
+
+	/**
+	 * Additional argument in a single line to the Xvfb process.
+	 */
+	@Parameter(required = false, property = "xvfb.arg.line")
+	protected String xvfbArgLine;
 
 	/**
 	 * Shut down the given Xvfb process.
