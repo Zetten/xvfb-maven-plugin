@@ -124,20 +124,19 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 
 	/**
 	 * Launch Xvfb on the given X display.
-	 * 
-	 * @param d
-	 *            The X display to use, e.g. ":20".
+	 *
+	 * @param d The X display to use, e.g. ":20".
 	 * @return The Process representing the Xvfb server.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
 	private void startXvfb(String d) throws Exception {
 		List<String> command = Lists.newArrayList(xvfbBinary);
 		command.add(d);
-		if ( xvfbArgs!=null ) {
+		if (xvfbArgs != null) {
 			command.addAll(xvfbArgs);
 		}
-		if ( xvfbArgLine!=null ) {
+		if (xvfbArgLine != null) {
 			String[] args = CommandLineUtils.translateCommandline(xvfbArgLine);
 			command.addAll(Arrays.asList(args));
 		}
@@ -174,10 +173,9 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	 * Iterate through the range specified by xDisplayPortBase, xDisplayDefaultNumber, and maxDisplaysToSearch until a
 	 * free port is found. If a socket can be created against the port, a lockfile is also created to reserve the port
 	 * against other executions of the plugin.
-	 * 
+	 *
 	 * @return The created socket, if one is found in the given bounds.
-	 * @throws MojoExecutionException
-	 *             If no socket is able to be created.
+	 * @throws MojoExecutionException If no socket is able to be created.
 	 */
 	@SuppressWarnings("unchecked")
 	private ServerSocket getAvailableDisplaySocket() throws MojoExecutionException {

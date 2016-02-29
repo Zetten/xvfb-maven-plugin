@@ -161,25 +161,25 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected void destroyXvfb(final Process process) {
 		getLog().debug("Shutting down Xvfb from previous run...");
 		process.destroy();
-		
+
 		// workaround blocking java.lang.Process.waitFor()
 		// with Java8 we will get java.lang.Process.waitFor(long, TimeUnit)
-		
+
 		FutureTask<Integer> waitFor = new FutureTask<Integer>(new Callable<Integer>() {
 
 			@Override
 			public Integer call() throws Exception {
 				return process.waitFor();
 			}
-			
+
 		});
 		Executors.newSingleThreadExecutor().execute(waitFor);
-		
+
 		try {
-			Integer exitValue = waitFor.get(destroyTimeout,TimeUnit.SECONDS);
+			Integer exitValue = waitFor.get(destroyTimeout, TimeUnit.SECONDS);
 			getLog().info("Xvfb shut down with exit code " + exitValue + ".");
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			getLog().info("Xvfb shut down with unknown exit code.");				
+			getLog().info("Xvfb shut down with unknown exit code.");
 		}
 	}
 
