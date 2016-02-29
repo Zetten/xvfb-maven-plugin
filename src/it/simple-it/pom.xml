@@ -57,7 +57,7 @@
 				</executions>
 				<configuration>
 					<display>:99</display>
-					<stopTimeoutInSeconds>1313</stopTimeoutInSeconds>
+					<destroyTimeout>1313</destroyTimeout>
 				</configuration>
 			</plugin>
 			<plugin>

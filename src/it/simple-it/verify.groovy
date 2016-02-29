@@ -34,10 +34,10 @@ new File(basedir, "target/out-fbdir").eachLine { line ->
 }
 assert foundFbdir
 
-def foundStopTimeout = false
+def foundDestroyTimeout = false
 new File(basedir, "build.log").eachLine { line ->
-	if (!foundStopTimeout) {
-		foundStopTimeout = (line =~ /.*stopTimeoutInSeconds = 1313/).matches()
+	if (!foundDestroyTimeout) {
+		foundDestroyTimeout = (line =~ /.*destroyTimeout = 1313/).matches()
 	}
 }
-assert foundStopTimeout
+assert foundDestroyTimeout

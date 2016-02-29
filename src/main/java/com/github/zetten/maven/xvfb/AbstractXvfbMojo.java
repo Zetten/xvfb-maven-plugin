@@ -136,10 +136,10 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected String fbdir;
 
 	/**
-	 * The number of seconds to wait for return value when stopping Xvfb process.
+	 * The number of seconds to wait for the exit value after destroying the Xvfb process.
 	 */
-	@Parameter(defaultValue = "13", required = false)
-	protected long stopTimeoutInSeconds;
+	@Parameter(defaultValue = "13", required = false, property = "xvfb.destroy.timeout")
+	protected int destroyTimeout;
 
 	/**
 	 * Additional arguments to the Xvfb process.
@@ -170,7 +170,7 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 		Executors.newSingleThreadExecutor().execute(waitFor);
 		
 		try {
-			Integer exitValue = waitFor.get(stopTimeoutInSeconds,TimeUnit.SECONDS);
+			Integer exitValue = waitFor.get(destroyTimeout,TimeUnit.SECONDS);
 			getLog().info("Xvfb shut down with exit code " + exitValue + ".");
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			getLog().info("Xvfb shut down with unknown exit code.");				
