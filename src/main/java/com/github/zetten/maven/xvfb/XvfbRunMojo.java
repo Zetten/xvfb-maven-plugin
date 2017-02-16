@@ -93,6 +93,10 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			getLog().info("Xvfb start is skipped.");
+			return;
+		}
 		if (display != null) {
 			// If a fixed display variable is configured, use it
 			if (isDisplayActive(display)) {
