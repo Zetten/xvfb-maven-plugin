@@ -91,6 +91,29 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 
 	/**
 	 * <p>
+	 * True if xvfb:run should check that Xvfb is listening on the expected port after being started.
+	 * </p>
+	 * <p>
+	 * This prevents race conditions between Xvfb being ready and tests starting to run.
+	 * </p>
+	 */
+	@Parameter(defaultValue = "true", required = true, property = "xvfb.checkactive")
+	protected Boolean checkActive;
+
+	/**
+	 * Maximum number of times the active check is performed before giving up.
+	 */
+	@Parameter(defaultValue = "10", required = true, property = "xvfb.checkactive.count")
+	protected Integer checkActiveCount;
+
+	/**
+	 * Delay between active checks (to this the connection timeout could be added).
+	 */
+	@Parameter(defaultValue = "1000", required = true, property = "xvfb.checkactive.delay")
+	protected Integer checkActiveDelay;
+
+	/**
+	 * <p>
 	 * True if xvfb:run should keep retrying the port detection until a valid X display port is found.
 	 * </p>
 	 * <p>
