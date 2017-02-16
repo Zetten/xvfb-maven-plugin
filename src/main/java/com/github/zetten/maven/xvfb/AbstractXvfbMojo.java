@@ -54,6 +54,12 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected MavenProject mavenProject;
 
 	/**
+	 * Skip the execution of the plugins.
+	 */
+	@Parameter(defaultValue = "false", property = "xvfb.skip")
+	protected boolean skip;
+
+	/**
 	 * Path to the Xvfb binary. By default the first available Xvfb in $PATH will be used.
 	 */
 	@Parameter(defaultValue = "Xvfb", required = true)

@@ -36,6 +36,10 @@ public class XvfbStopMojo extends AbstractXvfbMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			getLog().info("Xvfb stop is skipped.");
+			return;
+		}
 		if (getPluginContext().containsKey(XVFB_PROCESS_KEY)) {
 			Process process = (Process) getPluginContext().get(XVFB_PROCESS_KEY);
 
