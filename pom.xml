@@ -5,7 +5,7 @@
 
 	<groupId>com.github.zetten</groupId>
 	<artifactId>xvfb-maven-plugin</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.0</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>Xvfb Maven Plugin</name>
