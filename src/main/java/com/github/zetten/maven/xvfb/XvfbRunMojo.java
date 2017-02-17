@@ -297,7 +297,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	 * Check if the given display identifier is active or not.
 	 */
 	private boolean isDisplayActive(String d) throws MojoExecutionException {
-		ProcessBuilder builder = new ProcessBuilder("xset", "-display", d, "q");
+		ProcessBuilder builder = new ProcessBuilder(xsetBinary, "-display", d, "q");
 		try {
 			Process process = builder.start();
 			while (true) {
