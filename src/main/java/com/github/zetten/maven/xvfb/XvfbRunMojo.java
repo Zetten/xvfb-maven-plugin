@@ -105,7 +105,6 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 
 			try {
 				startXvfb(display);
-				return;
 			} catch (Exception e) {
 				throw new MojoExecutionException("Could not launch Xvfb.", e);
 			}
@@ -117,12 +116,11 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 				s.close();
 				getLog().info("Launching Xvfb on " + d);
 				startXvfb(d);
-				return;
 			} catch (Exception e) {
 				getLog().debug("Unable to start Xvfb by searching for a free port.", e);
+				throw new MojoExecutionException("Could not launch Xvfb.", e);
 			}
 
-			throw new MojoExecutionException("Could not launch Xvfb.");
 		}
 	}
 
@@ -136,7 +134,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	@SuppressWarnings("unchecked")
 	private void startXvfb(String d) throws Exception {
 		List<String> command = Lists.newArrayList(xvfbBinary);
-		command.add(d);
+
 		if (xvfbArgs != null) {
 			command.addAll(xvfbArgs);
 		}
@@ -154,6 +152,8 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			command.add(fbdir);
 		}
 
+		command.add(d);
+
 		final ProcessBuilder pb = new ProcessBuilder(command);
 
 		getLog().info("Attempting to launch Xvfb with arguments: " + command);
@@ -170,6 +170,8 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			if (setDisplayEnvVar) {
 				setEnvDisplay(d);
 			}
+
+			checkActive(d);
 		}
 	}
 
@@ -267,20 +269,45 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	}
 
 	/**
+	 * Checks (with retries) if the given display is active and throws an exception otherwise.
+	 * @param d
+	 * @throws MojoExecutionException
+	 */
+	private void checkActive(String d) throws MojoExecutionException {
+		if (!checkActive || checkActiveCount <= 0) {
+			return;
+		}
+		int count = checkActiveCount;
+		getLog().info("Waiting for Xvfb to become active...");
+		while (!isDisplayActive(d)) {
+			count--;
+			getLog().debug("Active check failed, retries remaining: " + count);
+			if (count == 0) {
+				throw new MojoExecutionException("Active check failed for display: " + d);
+			}
+			try {
+				Thread.sleep(checkActiveDelay);
+			} catch (InterruptedException ignored) {
+			}
+		}
+		getLog().info("Xvfb is active.");
+	}
+
+	/**
 	 * Check if the given display identifier is active or not.
 	 */
-	private boolean isDisplayActive(String d) {
+	private boolean isDisplayActive(String d) throws MojoExecutionException {
+		ProcessBuilder builder = new ProcessBuilder("xset", "-display", d, "q");
 		try {
-			Integer port = decodeDisplayPort(d);
-			Socket socket = new Socket("localhost", port);
-			socket.close();
-			return true;
-		} catch (ConnectException e) {
-			return false;
-		} catch (UnknownHostException e) {
-			return false;
-		} catch (IOException e) {
-			return false;
+			Process process = builder.start();
+			while (true) {
+				try {
+					return process.waitFor() == 0;
+				} catch (InterruptedException ignored) {
+				}
+			}
+		} catch (IOException ex) {
+			throw new MojoExecutionException("Failed to check if display is active: " + d, ex);
 		}
 	}
 
