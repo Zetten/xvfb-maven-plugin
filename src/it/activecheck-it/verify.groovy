@@ -21,6 +21,7 @@
 def foundWaiting = false
 def foundActiveCheckFailed = false
 def foundRetries = 0
+def foundShutdownHookException = false
 def usedDisplay = ""
 new File(basedir, "build.log").eachLine { line ->
 	def displayMatcher = line =~ /.*Launching Xvfb on (.*)/
@@ -36,7 +37,11 @@ new File(basedir, "build.log").eachLine { line ->
 	if (!foundActiveCheckFailed) {
 		foundActiveCheckFailed = (line =~ /.*Active check failed for display: $usedDisplay/).matches()
 	}
+	if (!foundShutdownHookException) {
+		foundShutdownHookException = (line =~ /.*java\.lang\.NoClassDefFoundError: .*/).matches()
+	}
 }
 assert foundWaiting
 assert foundActiveCheckFailed
 assert foundRetries == 5
+assert !foundShutdownHookException
