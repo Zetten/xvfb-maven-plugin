@@ -66,6 +66,12 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected String xvfbBinary;
 
 	/**
+	 * Path to the xset binary. By default the first available xset in $PATH will be used.
+	 */
+	@Parameter(defaultValue = "xset", required = true)
+	protected String xsetBinary;
+
+	/**
 	 * An optional parameter to fix the X display port used by Xvfb, e.g. ":20".
 	 */
 	@Parameter
@@ -193,15 +199,7 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 
 		// workaround blocking java.lang.Process.waitFor()
 		// with Java8 we will get java.lang.Process.waitFor(long, TimeUnit)
-
-		FutureTask<Integer> waitFor = new FutureTask<Integer>(new Callable<Integer>() {
-
-			@Override
-			public Integer call() throws Exception {
-				return process.waitFor();
-			}
-
-		});
+		FutureTask<Integer> waitFor = new FutureTask<Integer>(new Wait(process));
 		Executors.newSingleThreadExecutor().execute(waitFor);
 
 		try {
@@ -212,4 +210,16 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 		}
 	}
 
+	static class Wait implements Callable<Integer> {
+		private Process process;
+
+		public Wait(Process process) {
+			this.process = process;
+		}
+
+		@Override
+		public Integer call() throws Exception {
+			return process.waitFor();
+		}
+	}
 }

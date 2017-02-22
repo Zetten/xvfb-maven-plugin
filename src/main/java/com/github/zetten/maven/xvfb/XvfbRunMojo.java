@@ -24,15 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.ConnectException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -70,6 +65,18 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	 */
 	public XvfbRunMojo() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
+			{
+				/**
+				 * Forces the class loading to happen when the hook is added as it might be executed after the classloader
+				 * is destroyed.
+				 */
+				try {
+					Class.forName(Wait.class.getName());
+				} catch (ClassNotFoundException ex) {
+					getLog().error(ex);
+				}
+			}
+
 			public void run() {
 				if (getPluginContext().containsKey(XVFB_PROCESS_KEY)) {
 					Process process = (Process) getPluginContext().get(XVFB_PROCESS_KEY);
@@ -297,7 +304,7 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 	 * Check if the given display identifier is active or not.
 	 */
 	private boolean isDisplayActive(String d) throws MojoExecutionException {
-		ProcessBuilder builder = new ProcessBuilder("xset", "-display", d, "q");
+		ProcessBuilder builder = new ProcessBuilder(xsetBinary, "-display", d, "q");
 		try {
 			Process process = builder.start();
 			while (true) {
@@ -310,25 +317,4 @@ public class XvfbRunMojo extends AbstractXvfbMojo {
 			throw new MojoExecutionException("Failed to check if display is active: " + d, ex);
 		}
 	}
-
-	/**
-	 * <p>
-	 * Convert the DISPLAY variable into a port number.
-	 * </p>
-	 * <p>
-	 * Typically X displays map to TCP ports like :1 -> 6001
-	 * </p>
-	 */
-	private Integer decodeDisplayPort(String d) {
-		Matcher m = Pattern.compile("[^:]*:(\\d*)(?:\\.(\\d*))?").matcher(d);
-
-		if (!m.matches()) {
-			throw new IllegalArgumentException("Requested DISPLAY variable is not in the correct format (e.g. ':20')");
-		}
-
-		Integer i = Integer.parseInt(m.group(1));
-
-		return xDisplayPortBase + i;
-	}
-
 }
