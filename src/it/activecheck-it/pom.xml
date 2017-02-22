@@ -57,6 +57,7 @@
 				</executions>
 				<configuration>
 					<xvfbBinary>@basedir@/src/it/delayed_xvfb.sh</xvfbBinary>
+					<xsetBinary>/usr/bin/xset</xsetBinary>
 					<xvfbArgs>
 						<!--Delay before Xvfb start.-->
 						<xvfbArg>10s</xvfbArg>

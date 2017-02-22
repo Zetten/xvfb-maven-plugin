@@ -66,6 +66,12 @@ public abstract class AbstractXvfbMojo extends AbstractMojo {
 	protected String xvfbBinary;
 
 	/**
+	 * Path to the xset binary. By default the first available xset in $PATH will be used.
+	 */
+	@Parameter(defaultValue = "xset", required = true)
+	protected String xsetBinary;
+
+	/**
 	 * An optional parameter to fix the X display port used by Xvfb, e.g. ":20".
 	 */
 	@Parameter
